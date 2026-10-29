@@ -1,0 +1,24 @@
+{
+    "name": "Wobblefolk.TalkMouth.Tests",
+    "rootNamespace": "Wobblefolk.TalkMouth.Tests",
+    "references": [
+        "Wobblefolk.TalkMouth",
+        "UnityEngine.TestRunner",
+        "UnityEditor.TestRunner"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -1,0 +1,27 @@
+{
+  "name": "com.atthree.wobblefolk.talkmouth",
+  "version": "0.1.0",
+  "displayName": "Wobblefolk Talk Mouth",
+  "description": "Voice-driven mouths for any character: human jaws and blend shapes, monster and beak bones, stylised split heads that hinge open with the voice. Driven by AudioSources, the microphone, voice chat SDKs, typed dialogue or baked clips.",
+  "unity": "6000.3",
+  "keywords": [
+    "lip sync",
+    "talking",
+    "mouth",
+    "jaw",
+    "voice chat",
+    "viseme",
+    "procedural animation"
+  ],
+  "author": {
+    "name": "Abdulkadir Tiryaki"
+  },
+  "license": "MIT",
+  "documentationUrl": "https://github.com/Atthree/wobblefolk-talk-mouth#readme",
+  "licensesUrl": "https://github.com/Atthree/wobblefolk-talk-mouth/blob/main/LICENSE",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Atthree/wobblefolk-talk-mouth.git"
+  },
+  "dependencies": {}
+}
