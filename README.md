@@ -7,8 +7,8 @@ Voice-driven mouths for any character in Unity 6: human jaws and blend shapes, m
 heads that split open on a hinge as the character talks. Driven by AudioSources, the microphone, voice chat SDKs,
 typed dialogue or baked clips.
 
-> **Work in progress.** Stages 1–2 of 6 are done: the analyzer and the voice sources. Mouth drivers, samples and the
-> full documentation follow.
+> **Work in progress.** Stages 1–3 of 6 are done: the analyzer, the voice sources and the main mouth drivers with
+> two samples. More drivers, baking, LOD, the setup tool and the full documentation follow.
 
 **Install:** *Window > Package Manager > + > Add package from git URL…*
 
@@ -18,9 +18,19 @@ https://github.com/Atthree/wobblefolk-talk-mouth.git?path=/Packages/com.atthree.
 
 ## Try it now
 
-1. Add **Talk Voice** and one voice source (below) to a GameObject.
-2. Enter Play Mode and select it: the Inspector shows the voice level against the gate, the mouth opening and the
-   five mouth shapes live.
+Import a sample (*Package Manager > Wobblefolk Talk Mouth > Samples*) and press Play:
+
+| Sample | Shows |
+|---|---|
+| **Humanoid** | Sphere head with a capsule jaw (Jaw Bone driver) and a mouth that stretches per shape (Transform driver), both on one voice. 1 / 2 / 3: synthetic voice, microphone, typed dialogue. M mutes. |
+| **Split Head** | The top half of the head swings open on a hinge (Hinge Split driver, Bouncy Split Head profile); a hat follows a moment later, the lower half drops a little. 1 / 2: synthetic voice, microphone. B: bounce, J: rattle, M: mute. |
+
+The samples ship no audio: their voice is synthesised at start. Or set up your own character:
+
+1. Add **Talk Voice** and one voice source (below) to the character.
+2. Add a mouth driver (below) to the jaw, face or head.
+3. Enter Play Mode and select the voice: the Inspector shows the level against the gate, the opening and the five
+   mouth shapes live. Select a jaw or hinge driver to see its axis and opening arc in the Scene view.
 
 ## Voice sources
 
@@ -38,6 +48,26 @@ voice.OnSpeechStarted += () => indicator.SetActive(true);
 voice.OnSpeechLevel += state => Debug.Log(state.openness);
 voice.SetEnabled(false); // dead, fainted or muted: the mouth closes smoothly
 ```
+
+## Mouth drivers
+
+| Driver | Moves |
+|---|---|
+| **Jaw Bone** | A jaw bone or object, rotated about a local axis (and optionally slid). "aa" opens widest, "oh" and "ee" less, "ff" barely. |
+| **Blend Shape** | Blend shapes from a table: the opening and each mouth shape to any blend shape and weight. *Find Blend Shapes By Name* (component menu) fills it from names like `jawOpen`, `viseme_aa`, `mouth_O`. |
+| **Transform** | Any object: position, rotation and scale at full opening, optionally reshaped per mouth shape. |
+| **Hinge Split** | Pieces that swing about a hinge: the top of a split head, a lower half (reversed), a hat that follows later. Each piece has its own share, direction and delay. Snappy attack and release, curve, exaggeration, a spring that overshoots and wobbles shut, and an optional rattle when loud. |
+
+All drivers apply in LateUpdate, can lag behind the voice (*Delay*) and scale it (*Amount*), and bounce with the
+profile's spring, their own or none. A bouncing mouth never swings through the face: it bounces off the closed pose.
+Any number of drivers can follow one voice. Disabling a driver puts everything back to its rest pose.
+
+**Animated characters.** Drivers add the mouth on top of the animation: whenever something else (an Animator, a
+script) moved the jaw or set a blend shape since the driver last did, that becomes the new base. If an animation
+should own the jaw completely (a scream), disable the driver for that moment.
+
+**Split heads need separate meshes** for each moving piece (top and bottom half), and the hinge must not be inside
+one of them. The Split Head sample uses two half-sphere meshes, each with a lid for the inside of the mouth.
 
 ## The analyzer (stage 1)
 

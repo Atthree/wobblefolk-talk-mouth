@@ -54,18 +54,19 @@ namespace Wobblefolk.TalkMouth
                 case VoiceSignalKind.Samples:
                     return Process(signal.Samples, signal.SampleRate, profile, dt, allowVisemes);
                 case VoiceSignalKind.Level:
-                    return ProcessHinted(signal.Level, signal, profile, dt, allowVisemes);
+                    return ProcessHinted(signal.Level, signal, profile, dt, allowVisemes, true);
                 case VoiceSignalKind.Normalized:
-                    return ProcessHinted(NormalizedToRms(signal.Level, profile.level), signal, profile, dt, allowVisemes);
+                    // Already on the profile's scale: the adaptive gate has nothing to learn from it.
+                    return ProcessHinted(NormalizedToRms(signal.Level, profile.level), signal, profile, dt, allowVisemes, false);
                 default:
                     return ProcessLevel(0f, profile, dt);
             }
         }
 
-        MouthState ProcessHinted(float rms, VoiceSignal signal, TalkMouthProfile profile, float dt, bool allowVisemes)
+        MouthState ProcessHinted(float rms, VoiceSignal signal, TalkMouthProfile profile, float dt, bool allowVisemes, bool adapt)
         {
-            if (!allowVisemes || !signal.HasViseme) return ProcessLevel(rms, profile, dt);
-            return ProcessBands(rms, BandsFor(signal.Viseme, profile.visemes), profile, dt);
+            if (!allowVisemes || !signal.HasViseme) return Step(rms, default, false, profile, dt, adapt);
+            return Step(rms, BandsFor(signal.Viseme, profile.visemes), profile.visemes.mode == AnalysisMode.Visemes, profile, dt, adapt);
         }
 
         /// <summary>
@@ -104,7 +105,7 @@ namespace Wobblefolk.TalkMouth
         public MouthState ProcessBands(float rms, in BandEnergies bands, TalkMouthProfile profile, float dt) =>
             Step(rms, bands, profile.visemes.mode == AnalysisMode.Visemes, profile, dt);
 
-        MouthState Step(float rms, in BandEnergies bands, bool useBands, TalkMouthProfile profile, float dt)
+        MouthState Step(float rms, in BandEnergies bands, bool useBands, TalkMouthProfile profile, float dt, bool adapt = true)
         {
             if (profile == null) throw new ArgumentNullException(nameof(profile));
             dt = Mathf.Max(0f, dt);
@@ -113,7 +114,7 @@ namespace Wobblefolk.TalkMouth
             EnvelopeSettings timing = profile.envelope;
 
             float levelDb = rms <= 0f ? LevelMeter.MinDecibels : LevelMeter.ToDecibels(rms) + level.inputGainDb;
-            gate.Update(levelDb, level, dt);
+            gate.Update(levelDb, level, dt, adapt);
             float target = gate.Normalize(levelDb);
 
             float time = target > envelope ? timing.attackTime : gate.IsSpeaking ? timing.releaseTime : timing.closeTime;
