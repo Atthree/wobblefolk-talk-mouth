@@ -108,6 +108,17 @@ namespace Wobblefolk.TalkMouth.Tests
             Assert.AreEqual(0.5f, Settle(analyzer, signal, p).openness, 0.02f);
         }
 
+        [Test]
+        public void NormalizedLevel_OpensAnAdaptiveProfileFromTheFirstFrame()
+        {
+            TalkMouthProfile p = Profile(TalkMouthPreset.BouncySplitHead);
+            Assert.IsTrue(p.level.adaptive);
+            var signal = new VoiceSignal(16);
+            signal.SetNormalized(1f);
+            var analyzer = new TalkAnalyzer();
+            Assert.AreEqual(1f, Settle(analyzer, signal, p, 5f).openness, 0.02f, "a steady clean level is not taken for noise");
+        }
+
         [TestCase(Viseme.AA)]
         [TestCase(Viseme.OH)]
         [TestCase(Viseme.EE)]

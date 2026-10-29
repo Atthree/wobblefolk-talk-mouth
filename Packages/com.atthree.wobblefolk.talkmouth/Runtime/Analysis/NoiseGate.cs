@@ -41,12 +41,16 @@ namespace Wobblefolk.TalkMouth
             NoiseFloorDb = LevelMeter.MinDecibels;
         }
 
-        public void Update(float levelDb, LevelSettings settings, float dt)
+        /// <param name="adapt">
+        /// False for clean levels that already sit on the profile's scale (typed dialogue, normalized SDK levels):
+        /// they have no background noise to follow, and a steady level would otherwise be taken for noise.
+        /// </param>
+        public void Update(float levelDb, LevelSettings settings, float dt, bool adapt = true)
         {
             float threshold = settings.gateThresholdDb;
             float full = settings.fullLevelDb;
 
-            if (settings.adaptive)
+            if (settings.adaptive && adapt)
             {
                 if (!tracking)
                 {

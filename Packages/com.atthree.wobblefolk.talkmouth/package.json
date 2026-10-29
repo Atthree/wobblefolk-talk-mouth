@@ -23,5 +23,17 @@
     "type": "git",
     "url": "https://github.com/Atthree/wobblefolk-talk-mouth.git"
   },
-  "dependencies": {}
+  "dependencies": {},
+  "samples": [
+    {
+      "displayName": "Humanoid",
+      "description": "Primitive character: sphere head, capsule jaw (Jaw Bone driver) and a mouth that stretches per shape (Transform driver), both following one voice. Keys 1/2/3 switch between a synthetic voice clip, the microphone and typed dialogue; M mutes the mouth.",
+      "path": "Samples~/Humanoid"
+    },
+    {
+      "displayName": "Split Head",
+      "description": "Stylised head whose top half swings open on a hinge as it talks (Hinge Split driver, Bouncy Split Head profile): two big eyes, a hat that follows a moment later, a lower half that drops a little. Keys 1/2 switch between a synthetic voice and the microphone; B cycles the bounce, J toggles the rattle, M mutes.",
+      "path": "Samples~/SplitHead"
+    }
+  ]
 }
