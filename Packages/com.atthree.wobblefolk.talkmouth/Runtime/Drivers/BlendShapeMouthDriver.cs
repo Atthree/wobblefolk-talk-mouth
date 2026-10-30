@@ -167,19 +167,14 @@ namespace Wobblefolk.TalkMouth
             written = true;
         }
 
+        /// <summary>The spring moves the opening; the shapes are scaled with it. Closed is left as heard.</summary>
         static float Channel(MouthChannel channel, in MouthSample s, float open, float shapeScale)
         {
-            VisemeWeights v = s.visemes;
             switch (channel)
             {
                 case MouthChannel.Open: return open;
-                // Lips pressed between sounds while speaking; at rest the mouth is relaxed, not pressed.
-                case MouthChannel.Closed: return s.speaking ? v.closed : 0f;
-                case MouthChannel.AA: return v.aa * shapeScale;
-                case MouthChannel.OH: return v.oh * shapeScale;
-                case MouthChannel.EE: return v.ee * shapeScale;
-                case MouthChannel.FF: return v.ff * shapeScale;
-                default: return 0f;
+                case MouthChannel.Closed: return ChannelValue(channel, s);
+                default: return ChannelValue(channel, s) * shapeScale;
             }
         }
 
