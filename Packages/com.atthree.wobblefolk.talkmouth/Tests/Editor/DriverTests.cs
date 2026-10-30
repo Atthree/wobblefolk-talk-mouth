@@ -5,7 +5,7 @@ using UnityEngine.TestTools;
 
 namespace Wobblefolk.TalkMouth.Tests
 {
-    public sealed class DriverTests
+    public sealed partial class DriverTests
     {
         const float Dt = 1f / 60f;
         readonly List<Object> created = new List<Object>();

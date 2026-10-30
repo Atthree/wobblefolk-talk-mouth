@@ -28,6 +28,24 @@ namespace Wobblefolk.TalkMouth.Editor
         }
 
         [DrawGizmo(GizmoType.Selected | GizmoType.Active)]
+        static void DrawBones(MultiBoneMouthDriver driver, GizmoType type)
+        {
+            bool live = Application.isPlaying && driver.isActiveAndEnabled;
+            foreach (MouthBone b in driver.Bones)
+            {
+                if (b == null || b.bone == null || Mathf.Approximately(b.openAngle, 0f)) continue;
+                Vector3 pivot = b.bone.position;
+                Vector3 axis = b.bone.TransformDirection(JawBoneMouthDriver.SafeAxis(b.axis)).normalized;
+                float current = live ? b.CurrentAngle : 0f;
+                Vector3 rest = Quaternion.AngleAxis(-current, axis) * Reach(b.bone, pivot, axis, out float radius);
+
+                DrawAxis(pivot, axis, radius);
+                DrawArc(pivot, axis, rest, 0f, b.openAngle * b.multiplier, radius);
+                if (live) DrawCurrent(pivot, axis, rest, current, radius);
+            }
+        }
+
+        [DrawGizmo(GizmoType.Selected | GizmoType.Active)]
         static void DrawHinge(HingeSplitMouthDriver driver, GizmoType type)
         {
             Vector3 pivot = driver.HingePoint;

@@ -7,8 +7,8 @@ Voice-driven mouths for any character in Unity 6: human jaws and blend shapes, m
 heads that split open on a hinge as the character talks. Driven by AudioSources, the microphone, voice chat SDKs,
 typed dialogue or baked clips.
 
-> **Work in progress.** Stages 1–3 of 6 are done: the analyzer, the voice sources and the main mouth drivers with
-> two samples. More drivers, baking, LOD, the setup tool and the full documentation follow.
+> **Work in progress.** Stages 1–4 of 6 are done: the analyzer, the voice sources, all main mouth drivers and four
+> samples. Baking, LOD, the setup tool and the full documentation follow.
 
 **Install:** *Window > Package Manager > + > Add package from git URL…*
 
@@ -24,6 +24,8 @@ Import a sample (*Package Manager > Wobblefolk Talk Mouth > Samples*) and press 
 |---|---|
 | **Humanoid** | Sphere head with a capsule jaw (Jaw Bone driver) and a mouth that stretches per shape (Transform driver), both on one voice. 1 / 2 / 3: synthetic voice, microphone, typed dialogue. M mutes. |
 | **Split Head** | The top half of the head swings open on a hinge (Hinge Split driver, Bouncy Split Head profile); a hat follows a moment later, the lower half drops a little. 1 / 2: synthetic voice, microphone. B: bounce, J: rattle, M: mute. |
+| **Monster** | Lower and upper jaw, two mandibles that spread sideways and a tongue that slides out only when loud: one Multi Bone driver, Monster profile. 1 / 2: synthetic voice, microphone. M: mute. |
+| **Beak** | Beak halves, crest feathers that follow one after another and wings that flap on loud syllables: one Multi Bone driver, Bird profile. 1 / 2: synthetic voice, microphone. M: mute. |
 
 The samples ship no audio: their voice is synthesised at start. Or set up your own character:
 
@@ -56,9 +58,12 @@ voice.SetEnabled(false); // dead, fainted or muted: the mouth closes smoothly
 | **Jaw Bone** | A jaw bone or object, rotated about a local axis (and optionally slid). "aa" opens widest, "oh" and "ee" less, "ff" barely. |
 | **Blend Shape** | Blend shapes from a table: the opening and each mouth shape to any blend shape and weight. *Find Blend Shapes By Name* (component menu) fills it from names like `jawOpen`, `viseme_aa`, `mouth_O`. |
 | **Transform** | Any object: position, rotation and scale at full opening, optionally reshaped per mouth shape. |
+| **Multi Bone** | Any number of bones from one voice, each with its own axis, angle, offset, scale, curve, delay and channel (the opening or one shape's weight): multi-part jaws, mandibles, beaks, a tongue that only comes out when loud. |
+| **Sprite** | 2D mouths: frames from closed to open, or one sprite per shape. Holds each sprite a minimum time, so it does not flicker. An event reports every change, e.g. for a UI Image in a dialogue portrait. |
+| **Animator Parameter** | Animator parameters (opening, speaking, per-shape weights, strongest shape) for a blend tree or a talking layer. Runs in Update, before the Animator; missing names are skipped. |
 | **Hinge Split** | Pieces that swing about a hinge: the top of a split head, a lower half (reversed), a hat that follows later. Each piece has its own share, direction and delay. Snappy attack and release, curve, exaggeration, a spring that overshoots and wobbles shut, and an optional rattle when loud. |
 
-All drivers apply in LateUpdate, can lag behind the voice (*Delay*) and scale it (*Amount*), and bounce with the
+Pose drivers apply in LateUpdate (the Animator Parameter driver in Update), can lag behind the voice (*Delay*) and scale it (*Amount*), and bounce with the
 profile's spring, their own or none. A bouncing mouth never swings through the face: it bounces off the closed pose.
 Any number of drivers can follow one voice. Disabling a driver puts everything back to its rest pose.
 

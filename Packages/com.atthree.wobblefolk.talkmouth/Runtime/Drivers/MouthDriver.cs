@@ -120,7 +120,23 @@ namespace Wobblefolk.TalkMouth
 
         protected virtual void OnDisable() => Restore();
 
-        void LateUpdate() => Tick(useUnscaledTime ? Time.unscaledDeltaTime : Time.deltaTime);
+        /// <summary>
+        /// True for drivers that feed the animation (Animator parameters) and so must run in Update, before it is
+        /// evaluated; false (default) for drivers that pose things after it, in LateUpdate.
+        /// </summary>
+        protected virtual bool RunsBeforeAnimation => false;
+
+        float DeltaTime => useUnscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
+
+        void Update()
+        {
+            if (RunsBeforeAnimation) Tick(DeltaTime);
+        }
+
+        void LateUpdate()
+        {
+            if (!RunsBeforeAnimation) Tick(DeltaTime);
+        }
 
         /// <summary>Reads the voice and applies one frame. Public so tests and custom loops can drive it.</summary>
         public void Tick(float dt)
@@ -181,6 +197,25 @@ namespace Wobblefolk.TalkMouth
 
         /// <summary>Puts everything back to the rest pose (on disable).</summary>
         public abstract void Restore();
+
+        /// <summary>
+        /// A channel's value in <paramref name="s"/>: the opening, or one shape's weight. Closed counts only between
+        /// sounds while speaking (lips pressed), not at rest.
+        /// </summary>
+        public static float ChannelValue(MouthChannel channel, in MouthSample s)
+        {
+            VisemeWeights v = s.visemes;
+            switch (channel)
+            {
+                case MouthChannel.Open: return s.openness;
+                case MouthChannel.Closed: return s.speaking ? v.closed : 0f;
+                case MouthChannel.AA: return v.aa;
+                case MouthChannel.OH: return v.oh;
+                case MouthChannel.EE: return v.ee;
+                case MouthChannel.FF: return v.ff;
+                default: return 0f;
+            }
+        }
 
         /// <summary>
         /// Opening adjusted by shape: an "oh" or "ee" opens the jaw less than an "aa". <paramref name="influence"/> 0

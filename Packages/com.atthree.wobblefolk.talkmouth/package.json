@@ -34,6 +34,16 @@
       "displayName": "Split Head",
       "description": "Stylised head whose top half swings open on a hinge as it talks (Hinge Split driver, Bouncy Split Head profile): two big eyes, a hat that follows a moment later, a lower half that drops a little. Keys 1/2 switch between a synthetic voice and the microphone; B cycles the bounce, J toggles the rattle, M mutes.",
       "path": "Samples~/SplitHead"
+    },
+    {
+      "displayName": "Monster",
+      "description": "Three-eyed primitive monster: lower and upper jaw, two mandibles that spread sideways and a tongue that slides out only when loud, all one Multi Bone driver with the Monster profile. Keys 1/2 switch between a synthetic voice and the microphone; M mutes.",
+      "path": "Samples~/Monster"
+    },
+    {
+      "displayName": "Beak",
+      "description": "Primitive bird: upper and lower beak halves, crest feathers that follow one after another and wings that flap on loud syllables, all one Multi Bone driver with the Bird profile. Keys 1/2 switch between a synthetic voice and the microphone; M mutes.",
+      "path": "Samples~/Beak"
     }
   ]
 }

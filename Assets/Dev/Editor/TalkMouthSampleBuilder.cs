@@ -19,12 +19,161 @@ static class TalkMouthSampleBuilder
 {
     const string Root = "Assets/TalkMouthSamples";
 
+    /// <summary>Builds every sample whose Scripts folder was copied to <see cref="Root"/> (the others keep their assets).</summary>
     public static void BuildAll()
     {
-        BuildHumanoid();
-        BuildSplitHead();
+        Build("Humanoid", BuildHumanoid);
+        Build("SplitHead", BuildSplitHead);
+        Build("Monster", BuildMonster);
+        Build("Beak", BuildBeak);
         AssetDatabase.SaveAssets();
         Debug.Log("Talk Mouth samples built.");
+    }
+
+    static void Build(string sample, Action build)
+    {
+        if (!Directory.Exists(Root + "/" + sample + "/Scripts")) return;
+        build();
+        Debug.Log("Built sample " + sample);
+    }
+
+    static void BuildMonster()
+    {
+        string dir = Root + "/Monster";
+        Scene scene = NewStage(dir, new Vector3(1.0f, 1.05f, 2.1f), new Vector3(0f, 0.7f, 0f));
+
+        Material skin = Mat(dir, "Skin", new Color(0.55f, 0.35f, 0.78f));
+        Material jawSkin = Mat(dir, "JawSkin", new Color(0.48f, 0.3f, 0.7f));
+        Material inside = Mat(dir, "Inside", new Color(0.3f, 0.04f, 0.1f), 0.1f);
+        Material tongue = Mat(dir, "Tongue", new Color(0.95f, 0.4f, 0.5f), 0.5f);
+        Material tooth = Mat(dir, "Tooth", new Color(0.98f, 0.96f, 0.86f), 0.6f);
+        Material horn = Mat(dir, "Mandible", new Color(0.9f, 0.85f, 0.7f), 0.4f);
+        Material eyeWhite = Mat(dir, "EyeWhite", new Color(0.97f, 0.97f, 0.95f), 0.6f);
+        Material pupil = Mat(dir, "Pupil", new Color(0.05f, 0.05f, 0.07f), 0.8f);
+        Floor(dir);
+        TalkMouthProfile profile = Profile(dir, "MonsterVoice", TalkMouthPreset.Monster);
+
+        var root = new GameObject("Monster");
+        Prim(PrimitiveType.Sphere, "Body", root.transform, new Vector3(0f, 0.75f, 0f), Vector3.one * 1.1f, skin);
+        Prim(PrimitiveType.Sphere, "Foot L", root.transform, new Vector3(-0.22f, 0.12f, 0.05f), new Vector3(0.25f, 0.14f, 0.32f), jawSkin);
+        Prim(PrimitiveType.Sphere, "Foot R", root.transform, new Vector3(0.22f, 0.12f, 0.05f), new Vector3(0.25f, 0.14f, 0.32f), jawSkin);
+        Eye(root.transform, new Vector3(-0.2f, 1.12f, 0.33f), 0.18f, eyeWhite, pupil);
+        Eye(root.transform, new Vector3(0.2f, 1.12f, 0.33f), 0.18f, eyeWhite, pupil);
+        Eye(root.transform, new Vector3(0f, 1.25f, 0.26f), 0.22f, eyeWhite, pupil).name = "Eye Middle";
+        Prim(PrimitiveType.Sphere, "Mouth Inside", root.transform, new Vector3(0f, 0.62f, 0.38f), new Vector3(0.55f, 0.2f, 0.35f), inside);
+
+        Transform upperPivot = Empty("Upper Jaw", root.transform, new Vector3(0f, 0.68f, 0.1f));
+        Prim(PrimitiveType.Sphere, "Upper Lip", upperPivot, new Vector3(0f, 0.03f, 0.3f), new Vector3(0.6f, 0.16f, 0.45f), skin);
+        Teeth(upperPivot, -0.035f, 0.47f, tooth, true);
+
+        Transform lowerPivot = Empty("Lower Jaw", root.transform, new Vector3(0f, 0.6f, 0.1f));
+        Prim(PrimitiveType.Sphere, "Chin", lowerPivot, new Vector3(0f, -0.06f, 0.3f), new Vector3(0.62f, 0.2f, 0.5f), jawSkin);
+        Teeth(lowerPivot, 0.03f, 0.5f, tooth, false);
+        Transform tonguePivot = Empty("Tongue", lowerPivot, new Vector3(0f, 0f, 0.15f));
+        Prim(PrimitiveType.Capsule, "Tongue Tip", tonguePivot, new Vector3(0f, 0.02f, 0.12f), new Vector3(0.16f, 0.18f, 0.06f), tongue, new Vector3(90f, 0f, 0f));
+
+        Transform mandibleL = Empty("Mandible L", root.transform, new Vector3(-0.3f, 0.58f, 0.38f));
+        Prim(PrimitiveType.Capsule, "Horn", mandibleL, new Vector3(0f, 0f, 0.12f), new Vector3(0.07f, 0.13f, 0.07f), horn, new Vector3(90f, 0f, 0f));
+        Transform mandibleR = Empty("Mandible R", root.transform, new Vector3(0.3f, 0.58f, 0.38f));
+        Prim(PrimitiveType.Capsule, "Horn", mandibleR, new Vector3(0f, 0f, 0.12f), new Vector3(0.07f, 0.13f, 0.07f), horn, new Vector3(90f, 0f, 0f));
+
+        AudioSource audio = VoiceAudio(root);
+        var clipSignal = root.AddComponent<AudioSourceSignal>();
+        var mic = root.AddComponent<MicrophoneSignal>();
+        mic.enabled = false;
+        TalkVoice voice = Voice(root, profile, clipSignal);
+
+        var jaws = root.AddComponent<MultiBoneMouthDriver>();
+        jaws.Voice = voice;
+        jaws.AddBone(lowerPivot, Vector3.right, 32f);
+        jaws.AddBone(upperPivot, Vector3.right, -12f);
+        jaws.AddBone(mandibleL, Vector3.up, -35f, 0.03f);
+        jaws.AddBone(mandibleR, Vector3.up, 35f, 0.03f);
+        MouthBone tip = jaws.AddBone(tonguePivot, Vector3.right, -12f, 0.08f);
+        tip.openOffset = new Vector3(0f, 0.02f, 0.3f);
+        tip.curve = new AnimationCurve(new Keyframe(0f, 0f), new Keyframe(0.55f, 0f), new Keyframe(1f, 1f));
+
+        SampleControls(root, "Wobblefolk.TalkMouth.Samples.MonsterTalkSample", voice, audio, clipSignal, mic);
+        Save(scene, dir + "/Monster.unity");
+    }
+
+    static void Teeth(Transform jaw, float y, float z, Material material, bool pointDown)
+    {
+        float[] xs = { -0.2f, -0.08f, 0.08f, 0.2f };
+        foreach (float x in xs)
+        {
+            float edge = Mathf.Abs(x) > 0.15f ? -0.06f : 0f;
+            Prim(PrimitiveType.Cube, "Tooth", jaw, new Vector3(x, y, z + edge), new Vector3(0.05f, 0.07f, 0.05f), material,
+                new Vector3(0f, 45f, pointDown ? 180f : 0f));
+        }
+    }
+
+    static void BuildBeak()
+    {
+        string dir = Root + "/Beak";
+        Scene scene = NewStage(dir, new Vector3(0.9f, 1.05f, 1.6f), new Vector3(0f, 0.8f, 0.1f));
+
+        Material feathers = Mat(dir, "Feathers", new Color(1f, 0.82f, 0.25f));
+        Material wing = Mat(dir, "Wing", new Color(0.95f, 0.7f, 0.2f));
+        Material beak = Mat(dir, "Beak", new Color(1f, 0.5f, 0.12f), 0.5f);
+        Material crest = Mat(dir, "Crest", new Color(0.9f, 0.3f, 0.25f));
+        Material eyeWhite = Mat(dir, "EyeWhite", new Color(0.97f, 0.97f, 0.95f), 0.6f);
+        Material pupil = Mat(dir, "Pupil", new Color(0.05f, 0.05f, 0.07f), 0.8f);
+        Floor(dir);
+        TalkMouthProfile profile = Profile(dir, "BirdVoice", TalkMouthPreset.Bird);
+
+        var root = new GameObject("Bird");
+        Prim(PrimitiveType.Sphere, "Body", root.transform, new Vector3(0f, 0.55f, 0f), new Vector3(0.6f, 0.55f, 0.7f), feathers);
+        Prim(PrimitiveType.Cylinder, "Leg L", root.transform, new Vector3(-0.1f, 0.15f, 0f), new Vector3(0.04f, 0.15f, 0.04f), beak);
+        Prim(PrimitiveType.Cylinder, "Leg R", root.transform, new Vector3(0.1f, 0.15f, 0f), new Vector3(0.04f, 0.15f, 0.04f), beak);
+        Transform head = Empty("Head", root.transform, new Vector3(0f, 1f, 0.12f));
+        Prim(PrimitiveType.Sphere, "Skull", head, Vector3.zero, Vector3.one * 0.42f, feathers);
+        Eye(head, new Vector3(-0.1f, 0.05f, 0.17f), 0.09f, eyeWhite, pupil);
+        Eye(head, new Vector3(0.1f, 0.05f, 0.17f), 0.09f, eyeWhite, pupil);
+
+        Transform upper = Empty("Upper Beak", head, new Vector3(0f, -0.01f, 0.18f));
+        Prim(PrimitiveType.Capsule, "Upper", upper, new Vector3(0f, 0f, 0.07f), new Vector3(0.11f, 0.09f, 0.06f), beak, new Vector3(90f, 0f, 0f));
+        Transform lower = Empty("Lower Beak", head, new Vector3(0f, -0.035f, 0.18f));
+        Prim(PrimitiveType.Capsule, "Lower", lower, new Vector3(0f, -0.005f, 0.06f), new Vector3(0.09f, 0.075f, 0.045f), beak, new Vector3(90f, 0f, 0f));
+
+        var crestFeathers = new Transform[3];
+        for (int i = 0; i < 3; i++)
+        {
+            crestFeathers[i] = Empty("Crest " + (i + 1), head, new Vector3(0f, 0.2f - i * 0.01f, 0.06f - i * 0.06f));
+            Prim(PrimitiveType.Capsule, "Feather", crestFeathers[i], new Vector3(0f, 0.06f, 0f), new Vector3(0.03f, 0.07f, 0.03f), crest, new Vector3(-15f, 0f, 0f));
+        }
+
+        Transform wingL = Empty("Wing L", root.transform, new Vector3(-0.28f, 0.75f, 0f));
+        Prim(PrimitiveType.Sphere, "Wing", wingL, new Vector3(0f, -0.15f, 0f), new Vector3(0.12f, 0.32f, 0.45f), wing);
+        Transform wingR = Empty("Wing R", root.transform, new Vector3(0.28f, 0.75f, 0f));
+        Prim(PrimitiveType.Sphere, "Wing", wingR, new Vector3(0f, -0.15f, 0f), new Vector3(0.12f, 0.32f, 0.45f), wing);
+
+        AudioSource audio = VoiceAudio(root);
+        var clipSignal = root.AddComponent<AudioSourceSignal>();
+        var mic = root.AddComponent<MicrophoneSignal>();
+        mic.enabled = false;
+        TalkVoice voice = Voice(root, profile, clipSignal);
+
+        var bones = root.AddComponent<MultiBoneMouthDriver>();
+        bones.Voice = voice;
+        bones.AddBone(upper, Vector3.right, -10f);
+        bones.AddBone(lower, Vector3.right, 30f);
+        for (int i = 0; i < 3; i++) bones.AddBone(crestFeathers[i], Vector3.right, 25f, 0.05f * i);
+        var flap = new AnimationCurve(new Keyframe(0f, 0f), new Keyframe(0.3f, 0f), new Keyframe(1f, 1f));
+        bones.AddBone(wingL, Vector3.forward, -25f, 0.04f).curve = flap;
+        bones.AddBone(wingR, Vector3.forward, 25f, 0.04f).curve = new AnimationCurve(flap.keys);
+
+        SampleControls(root, "Wobblefolk.TalkMouth.Samples.BeakTalkSample", voice, audio, clipSignal, mic);
+        Save(scene, dir + "/Beak.unity");
+    }
+
+    static void SampleControls(GameObject root, string typeName, TalkVoice voice, AudioSource audio, AudioSourceSignal clip, MicrophoneSignal mic)
+    {
+        Component sample = AddByName(root, typeName);
+        SetPublic(sample, "voice", voice);
+        SetPublic(sample, "voiceAudio", audio);
+        SetPublic(sample, "clipSignal", clip);
+        SetPublic(sample, "microphoneSignal", mic);
     }
 
     static void BuildHumanoid()
@@ -198,10 +347,11 @@ static class TalkMouthSampleBuilder
         return voice;
     }
 
-    static void Eye(Transform parent, Vector3 position, float size, Material white, Material pupil)
+    static GameObject Eye(Transform parent, Vector3 position, float size, Material white, Material pupil)
     {
         GameObject eye = Prim(PrimitiveType.Sphere, position.x < 0f ? "Eye L" : "Eye R", parent, position, Vector3.one * size, white);
         Prim(PrimitiveType.Sphere, "Pupil", eye.transform, new Vector3(0f, 0.02f, 0.38f), Vector3.one * 0.45f, pupil);
+        return eye;
     }
 
     static GameObject Prim(PrimitiveType type, string name, Transform parent, Vector3 position, Vector3 scale, Material material, Vector3 euler = default)
