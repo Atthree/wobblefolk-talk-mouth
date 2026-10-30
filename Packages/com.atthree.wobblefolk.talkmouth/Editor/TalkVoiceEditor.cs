@@ -48,6 +48,7 @@ namespace Wobblefolk.TalkMouth.Editor
 
             EditorGUILayout.LabelField("Speaking", state.isSpeaking ? "yes" : "no");
             EditorGUILayout.LabelField("Shape", state.Dominant.ToString());
+            EditorGUILayout.LabelField("Detail", voice.Lod.ToString());
             for (int i = 0; i < VisemeWeights.Count; i++)
             {
                 float w = state.visemes[i];

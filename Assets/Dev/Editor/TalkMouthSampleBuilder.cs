@@ -26,6 +26,7 @@ static class TalkMouthSampleBuilder
         Build("SplitHead", BuildSplitHead);
         Build("Monster", BuildMonster);
         Build("Beak", BuildBeak);
+        Build("Crowd", BuildCrowd);
         AssetDatabase.SaveAssets();
         Debug.Log("Talk Mouth samples built.");
     }
@@ -165,6 +166,64 @@ static class TalkMouthSampleBuilder
 
         SampleControls(root, "Wobblefolk.TalkMouth.Samples.BeakTalkSample", voice, audio, clipSignal, mic);
         Save(scene, dir + "/Beak.unity");
+    }
+
+    static void BuildCrowd()
+    {
+        string dir = Root + "/Crowd";
+        Scene scene = NewStage(dir, new Vector3(0f, 2.2f, -4.5f), new Vector3(0f, 0.8f, 3f));
+
+        Material body = Mat(dir, "Body", new Color(0.8f, 0.8f, 0.8f));
+        Material skin = Mat(dir, "Skin", new Color(0.96f, 0.78f, 0.64f));
+        Material mouth = Mat(dir, "Mouth", new Color(0.35f, 0.05f, 0.08f));
+        Material bubble = Mat(dir, "Bubble", Color.white, 0.6f);
+        Material eyeWhite = Mat(dir, "EyeWhite", new Color(0.97f, 0.97f, 0.95f), 0.6f);
+        Material pupil = Mat(dir, "Pupil", new Color(0.05f, 0.05f, 0.07f), 0.8f);
+        Floor(dir);
+        TalkMouthProfile profile = Profile(dir, "CrowdVoice", TalkMouthPreset.Cartoon);
+        Object.FindFirstObjectByType<Light>().transform.rotation = Quaternion.Euler(40f, 20f, 0f); // light the faces
+
+        // The camera looks along +Z at the crowd; talkers are turned to face it when spawned.
+        var talker = new GameObject("Talker Template");
+        GameObject bodyObject = Prim(PrimitiveType.Capsule, "Body", talker.transform, new Vector3(0f, 0.6f, 0f), new Vector3(0.4f, 0.45f, 0.35f), body);
+        Transform head = Empty("Head", talker.transform, new Vector3(0f, 1.25f, 0f));
+        Prim(PrimitiveType.Sphere, "Skull", head, Vector3.zero, Vector3.one * 0.4f, skin);
+        Eye(head, new Vector3(-0.07f, 0.04f, 0.16f), 0.08f, eyeWhite, pupil);
+        Eye(head, new Vector3(0.07f, 0.04f, 0.16f), 0.08f, eyeWhite, pupil);
+        GameObject lips = Prim(PrimitiveType.Sphere, "Mouth", head, new Vector3(0f, -0.08f, 0.17f), new Vector3(0.1f, 0.02f, 0.05f), mouth);
+        GameObject speech = Prim(PrimitiveType.Sphere, "Speech Bubble", talker.transform, new Vector3(0.18f, 1.62f, 0f), new Vector3(0.16f, 0.11f, 0.03f), bubble);
+
+        var audio = talker.AddComponent<AudioSource>();
+        audio.playOnAwake = false;
+        audio.loop = true;
+        audio.spatialBlend = 1f;
+        audio.volume = 0.35f;
+        audio.minDistance = 1.5f;
+        audio.maxDistance = 25f;
+        talker.AddComponent<AudioSourceSignal>();
+        var bakedSignal = talker.AddComponent<BakedVisemeSignal>();
+        TalkVoice voice = Voice(talker, profile, bakedSignal);
+        voice.UseLod = true;
+        voice.SetLodDistances(6f, 30f);
+        SetPublic(voice, "visibilityRenderer", bodyObject.GetComponent<Renderer>());
+
+        var lipDriver = lips.AddComponent<TransformMouthDriver>();
+        lipDriver.Voice = voice;
+        lipDriver.OpenScale = new Vector3(1f, 3.5f, 1f);
+        lipDriver.OpenPosition = new Vector3(0f, -0.01f, 0f);
+        lipDriver.UseShapes = true;
+
+        var indicator = talker.AddComponent<SpeakingIndicator>();
+        indicator.Voice = voice;
+        indicator.Indicator = speech;
+        speech.SetActive(false);
+        talker.SetActive(false);
+
+        var spawner = new GameObject("Crowd");
+        Component sample = AddByName(spawner, "Wobblefolk.TalkMouth.Samples.CrowdTalkSample");
+        SetPublic(sample, "talkerTemplate", talker);
+
+        Save(scene, dir + "/Crowd.unity");
     }
 
     static void SampleControls(GameObject root, string typeName, TalkVoice voice, AudioSource audio, AudioSourceSignal clip, MicrophoneSignal mic)
