@@ -28,6 +28,22 @@ namespace Wobblefolk.TalkMouth.Editor
         }
 
         [DrawGizmo(GizmoType.Selected | GizmoType.Active)]
+        static void DrawJoint(JointMouthDriver driver, GizmoType type)
+        {
+            ConfigurableJoint joint = driver.Joint;
+            if (joint == null) return;
+            Transform jaw = joint.transform;
+            Vector3 pivot = jaw.TransformPoint(joint.anchor);
+            Vector3 axis = jaw.TransformDirection(JawBoneMouthDriver.SafeAxis(driver.Axis)).normalized;
+            Vector3 rest = Reach(jaw, pivot, axis, out float radius);
+
+            // The arc shows the targets; in Play Mode the jaw itself shows how far the drive followed.
+            DrawAxis(pivot, axis, radius);
+            DrawArc(pivot, axis, rest, driver.ClosedAngle, driver.OpenAngle, radius);
+            if (Application.isPlaying && driver.isActiveAndEnabled) DrawCurrent(pivot, axis, rest, driver.CurrentAngle, radius);
+        }
+
+        [DrawGizmo(GizmoType.Selected | GizmoType.Active)]
         static void DrawBones(MultiBoneMouthDriver driver, GizmoType type)
         {
             bool live = Application.isPlaying && driver.isActiveAndEnabled;

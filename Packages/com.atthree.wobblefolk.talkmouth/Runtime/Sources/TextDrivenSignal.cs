@@ -60,6 +60,20 @@ namespace Wobblefolk.TalkMouth
         public UnityEvent<int> CharacterEvent => onCharacter;
         public UnityEvent FinishedEvent => onFinished;
 
+        /// <summary>Where the babble voice plays; null = silent.</summary>
+        public AudioSource BabbleOutput
+        {
+            get => babbleOutput;
+            set => babbleOutput = value;
+        }
+
+        /// <summary>Babble pitch (Hz). Changing it rebuilds the blips on the next letter.</summary>
+        public float BabblePitch
+        {
+            get => babblePitch;
+            set => babblePitch = Mathf.Clamp(value, 50f, 800f);
+        }
+
         /// <summary>Starts saying <paramref name="text"/>, replacing any line in progress.</summary>
         public void Say(string text)
         {

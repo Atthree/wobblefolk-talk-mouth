@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -40,6 +41,8 @@ namespace Wobblefolk.TalkMouth
         [SerializeField] FftSize fftSize = FftSize.Size1024;
         [Tooltip("Keep talking while the game is paused (Time.timeScale = 0), as audio does.")]
         [SerializeField] bool useUnscaledTime = true;
+        [Tooltip("Where listeners look when this voice speaks (the head or mouth). Empty = this object.")]
+        [SerializeField] Transform speakerPoint;
 
         [Header("Level of Detail")]
         [Tooltip("Do less work far from the camera: shapes up close, level only further away, nothing beyond.")]
@@ -71,7 +74,18 @@ namespace Wobblefolk.TalkMouth
         bool voiceEnabled = true;
         TalkLod automaticLod = TalkLod.Full;
 
+        static readonly List<TalkVoice> enabledVoices = new List<TalkVoice>();
+
+        /// <summary>Every enabled voice, e.g. to find who is speaking nearby. Do not keep the list.</summary>
+        public static IReadOnlyList<TalkVoice> All => enabledVoices;
+
         public MouthState State { get; private set; } = MouthState.Silent;
+
+        public Transform SpeakerPoint
+        {
+            get => speakerPoint != null ? speakerPoint : transform;
+            set => speakerPoint = value;
+        }
 
         /// <summary>Detail used last frame (always Full without LOD, unless overridden).</summary>
         public TalkLod Lod { get; private set; } = TalkLod.Full;
@@ -159,8 +173,14 @@ namespace Wobblefolk.TalkMouth
             EnsureAnalyzer();
         }
 
+        void OnEnable()
+        {
+            if (!enabledVoices.Contains(this)) enabledVoices.Add(this);
+        }
+
         void OnDisable()
         {
+            enabledVoices.Remove(this);
             bool wasSpeaking = State.isSpeaking;
             ResetAnalysis();
             if (wasSpeaking) RaiseEnded();

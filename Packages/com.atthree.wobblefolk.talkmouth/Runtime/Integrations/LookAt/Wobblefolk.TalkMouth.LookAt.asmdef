@@ -1,0 +1,25 @@
+{
+    "name": "Wobblefolk.TalkMouth.LookAt",
+    "rootNamespace": "Wobblefolk.TalkMouth",
+    "references": [
+        "Wobblefolk.TalkMouth",
+        "Wobblefolk.LookAt"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "WOBBLEFOLK_LOOK_AT"
+    ],
+    "versionDefines": [
+        {
+            "name": "com.atthree.wobblefolk.lookat",
+            "expression": "0.1.0",
+            "define": "WOBBLEFOLK_LOOK_AT"
+        }
+    ],
+    "noEngineReferences": false
+}

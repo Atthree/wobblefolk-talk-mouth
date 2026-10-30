@@ -27,6 +27,8 @@ static class TalkMouthSampleBuilder
         Build("Monster", BuildMonster);
         Build("Beak", BuildBeak);
         Build("Crowd", BuildCrowd);
+        Build("ActiveRagdollIntegration", BuildRagdollIntegration);
+        Build("LookAtIntegration", BuildLookAtIntegration);
         AssetDatabase.SaveAssets();
         Debug.Log("Talk Mouth samples built.");
     }
@@ -226,6 +228,77 @@ static class TalkMouthSampleBuilder
         Save(scene, dir + "/Crowd.unity");
     }
 
+    static void BuildRagdollIntegration()
+    {
+        string dir = Root + "/ActiveRagdollIntegration";
+        Scene scene = NewStage(dir, new Vector3(0f, 1.8f, -3.5f), new Vector3(0f, 1f, 0f));
+        Material body = Mat(dir, "Body", new Color(0.95f, 0.62f, 0.3f));
+        Material jaw = Mat(dir, "Jaw", new Color(0.85f, 0.52f, 0.25f));
+        Material eyeWhite = Mat(dir, "EyeWhite", new Color(0.97f, 0.97f, 0.95f), 0.6f);
+        Material pupil = Mat(dir, "Pupil", new Color(0.05f, 0.05f, 0.07f), 0.8f);
+        Material bubble = Mat(dir, "Bubble", Color.white, 0.6f);
+        Material prop = Mat(dir, "Prop", new Color(0.4f, 0.55f, 0.75f));
+        GameObject floor = Floor(dir, 4f);
+        floor.AddComponent<MeshCollider>();
+        // Something to bump into.
+        Prim(PrimitiveType.Cube, "Crate", null, new Vector3(1.8f, 0.25f, 2f), Vector3.one * 0.5f, prop).AddComponent<BoxCollider>();
+        Prim(PrimitiveType.Cube, "Ramp", null, new Vector3(-2.5f, 0.2f, 3f), new Vector3(1.5f, 0.1f, 2.5f), prop, new Vector3(-12f, 0f, 0f)).AddComponent<BoxCollider>();
+        TalkMouthProfile profile = Profile(dir, "RagdollVoice", TalkMouthPreset.Cartoon);
+
+        var setup = new GameObject("Talking Ragdoll Setup");
+        Component sample = AddByName(setup, "Wobblefolk.TalkMouth.Samples.RagdollTalkSampleSetup");
+        SetPublic(sample, "bodyMaterial", body);
+        SetPublic(sample, "jawMaterial", jaw);
+        SetPublic(sample, "eyeWhiteMaterial", eyeWhite);
+        SetPublic(sample, "pupilMaterial", pupil);
+        SetPublic(sample, "bubbleMaterial", bubble);
+        SetPublic(sample, "profile", profile);
+        Save(scene, dir + "/ActiveRagdollIntegration.unity");
+    }
+
+    static void BuildLookAtIntegration()
+    {
+        string dir = Root + "/LookAtIntegration";
+        Scene scene = NewStage(dir, new Vector3(0f, 1.6f, -2.2f), new Vector3(0f, 1.3f, 0.6f));
+        Object.FindFirstObjectByType<Light>().transform.rotation = Quaternion.Euler(40f, 20f, 0f); // light the faces
+        Material[] shirts =
+        {
+            Mat(dir, "Shirt Red", new Color(0.85f, 0.3f, 0.3f)),
+            Mat(dir, "Shirt Green", new Color(0.35f, 0.7f, 0.4f)),
+            Mat(dir, "Shirt Blue", new Color(0.3f, 0.45f, 0.85f)),
+        };
+        Material skin = Mat(dir, "Skin", new Color(0.96f, 0.78f, 0.64f));
+        Material chin = Mat(dir, "Chin", new Color(0.9f, 0.68f, 0.55f));
+        Material mouth = Mat(dir, "Mouth", new Color(0.35f, 0.05f, 0.08f));
+        Material eyeWhite = Mat(dir, "EyeWhite", new Color(0.97f, 0.97f, 0.95f), 0.6f);
+        Material pupil = Mat(dir, "Pupil", new Color(0.05f, 0.05f, 0.07f), 0.8f);
+        Material bubble = Mat(dir, "Bubble", Color.white, 0.6f);
+        Floor(dir);
+        TalkMouthProfile profile = Profile(dir, "ChatVoice", TalkMouthPreset.Cartoon);
+
+        var setup = new GameObject("Conversation");
+        setup.transform.position = new Vector3(0f, 0f, 0.6f);
+        Component sample = AddByName(setup, "Wobblefolk.TalkMouth.Samples.LookAtTalkSampleSetup");
+        SetArray(sample, "shirtMaterials", shirts);
+        SetPublic(sample, "skinMaterial", skin);
+        SetPublic(sample, "chinMaterial", chin);
+        SetPublic(sample, "mouthMaterial", mouth);
+        SetPublic(sample, "eyeWhiteMaterial", eyeWhite);
+        SetPublic(sample, "pupilMaterial", pupil);
+        SetPublic(sample, "bubbleMaterial", bubble);
+        SetPublic(sample, "profile", profile);
+        Save(scene, dir + "/LookAtIntegration.unity");
+    }
+
+    static void SetArray(Component component, string field, Object[] values)
+    {
+        var so = new SerializedObject(component);
+        SerializedProperty property = so.FindProperty(field) ?? throw new Exception($"{component.GetType().Name}.{field} not found");
+        property.arraySize = values.Length;
+        for (int i = 0; i < values.Length; i++) property.GetArrayElementAtIndex(i).objectReferenceValue = values[i];
+        so.ApplyModifiedPropertiesWithoutUndo();
+    }
+
     static void SampleControls(GameObject root, string typeName, TalkVoice voice, AudioSource audio, AudioSourceSignal clip, MicrophoneSignal mic)
     {
         Component sample = AddByName(root, typeName);
@@ -382,11 +455,12 @@ static class TalkMouthSampleBuilder
         return scene;
     }
 
-    static void Floor(string dir)
+    static GameObject Floor(string dir, float size = 3f)
     {
         Material floor = Mat(dir, "Floor", new Color(0.55f, 0.57f, 0.6f), 0.1f);
-        GameObject plane = Prim(PrimitiveType.Plane, "Floor", null, Vector3.zero, Vector3.one * 3f, floor);
+        GameObject plane = Prim(PrimitiveType.Plane, "Floor", null, Vector3.zero, Vector3.one * size, floor);
         plane.isStatic = true;
+        return plane;
     }
 
     static AudioSource VoiceAudio(GameObject root)

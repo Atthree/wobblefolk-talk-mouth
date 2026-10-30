@@ -3,6 +3,7 @@
     "rootNamespace": "Wobblefolk.TalkMouth.Tests",
     "references": [
         "Wobblefolk.TalkMouth",
+        "Wobblefolk.TalkMouth.Editor",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],
