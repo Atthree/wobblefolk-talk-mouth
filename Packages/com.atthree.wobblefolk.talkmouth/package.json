@@ -49,6 +49,16 @@
       "displayName": "Crowd",
       "description": "Twenty primitive talkers sharing one synthetic voice, baked once at start (Baked Viseme Signal, no FFT at runtime), with level of detail by distance and speech bubbles (Speaking Indicator) tinted by detail. W/S move the camera, B switches baked and live analysis, L toggles level of detail.",
       "path": "Samples~/Crowd"
+    },
+    {
+      "displayName": "Active Ragdoll Integration",
+      "description": "Requires the com.wobblefolk.active-ragdoll package. A primitive active ragdoll with a physical jaw on a ConfigurableJoint, opened by Joint Mouth Driver. WASD walks, 1/2 switch synthetic voice and microphone, M mutes, K knocks it out (the voice goes quiet and the jaw hangs open).",
+      "path": "Samples~/ActiveRagdollIntegration"
+    },
+    {
+      "displayName": "Look At Integration",
+      "description": "Requires the com.atthree.wobblefolk.lookat package. Three characters chat in turns while the listeners turn their eyes and head to whoever speaks (Speaker Look Target). Press 2 and talk into the microphone: they turn to you. Space pauses the chat.",
+      "path": "Samples~/LookAtIntegration"
     }
   ]
 }

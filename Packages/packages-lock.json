@@ -1,5 +1,12 @@
 {
   "dependencies": {
+    "com.atthree.wobblefolk.lookat": {
+      "version": "https://github.com/Atthree/wobblefolk-look-at.git?path=/Packages/com.atthree.wobblefolk.lookat",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "f654ea3194f4649321bfc64dbbeb11c6d6fe874d"
+    },
     "com.atthree.wobblefolk.talkmouth": {
       "version": "file:com.atthree.wobblefolk.talkmouth",
       "depth": 0,
@@ -198,6 +205,17 @@
         "com.unity.modules.jsonserialize": "1.0.0"
       },
       "url": "https://packages.unity.com"
+    },
+    "com.wobblefolk.active-ragdoll": {
+      "version": "https://github.com/Atthree/wobblefolk-active-ragdoll.git?path=/Packages/com.wobblefolk.active-ragdoll",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {
+        "com.unity.modules.animation": "1.0.0",
+        "com.unity.modules.physics": "1.0.0",
+        "com.unity.inputsystem": "1.20.0"
+      },
+      "hash": "7e09a2ff5a6d31dffe3ef1084aebead228ab8bfb"
     },
     "com.unity.modules.accessibility": {
       "version": "1.0.0",

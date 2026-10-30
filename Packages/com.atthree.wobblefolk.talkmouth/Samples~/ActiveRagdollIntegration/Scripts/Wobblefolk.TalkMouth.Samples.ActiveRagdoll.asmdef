@@ -1,0 +1,27 @@
+{
+    "name": "Wobblefolk.TalkMouth.Samples.ActiveRagdoll",
+    "rootNamespace": "Wobblefolk.TalkMouth.Samples",
+    "references": [
+        "Wobblefolk.TalkMouth",
+        "Wobblefolk.Ragdoll",
+        "Wobblefolk.Ragdoll.InputSystem",
+        "Unity.InputSystem"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "WOBBLEFOLK_ACTIVE_RAGDOLL"
+    ],
+    "versionDefines": [
+        {
+            "name": "com.wobblefolk.active-ragdoll",
+            "expression": "0.1.0",
+            "define": "WOBBLEFOLK_ACTIVE_RAGDOLL"
+        }
+    ],
+    "noEngineReferences": false
+}

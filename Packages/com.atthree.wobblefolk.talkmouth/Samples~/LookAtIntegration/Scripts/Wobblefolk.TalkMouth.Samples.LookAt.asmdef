@@ -1,0 +1,27 @@
+{
+    "name": "Wobblefolk.TalkMouth.Samples.LookAt",
+    "rootNamespace": "Wobblefolk.TalkMouth.Samples",
+    "references": [
+        "Wobblefolk.TalkMouth",
+        "Wobblefolk.TalkMouth.LookAt",
+        "Wobblefolk.LookAt",
+        "Unity.InputSystem"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "WOBBLEFOLK_LOOK_AT"
+    ],
+    "versionDefines": [
+        {
+            "name": "com.atthree.wobblefolk.lookat",
+            "expression": "0.1.0",
+            "define": "WOBBLEFOLK_LOOK_AT"
+        }
+    ],
+    "noEngineReferences": false
+}
