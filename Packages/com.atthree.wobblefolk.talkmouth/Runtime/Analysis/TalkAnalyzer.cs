@@ -58,6 +58,8 @@ namespace Wobblefolk.TalkMouth
                 case VoiceSignalKind.Normalized:
                     // Already on the profile's scale: the adaptive gate has nothing to learn from it.
                     return ProcessHinted(NormalizedToRms(signal.Level, profile.level), signal, profile, dt, allowVisemes, false);
+                case VoiceSignalKind.Bands:
+                    return Step(signal.Level, signal.Bands, allowVisemes && profile.visemes.mode == AnalysisMode.Visemes, profile, dt);
                 default:
                     return ProcessLevel(0f, profile, dt);
             }

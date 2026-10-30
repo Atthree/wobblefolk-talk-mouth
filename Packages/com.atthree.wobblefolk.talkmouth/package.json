@@ -44,6 +44,11 @@
       "displayName": "Beak",
       "description": "Primitive bird: upper and lower beak halves, crest feathers that follow one after another and wings that flap on loud syllables, all one Multi Bone driver with the Bird profile. Keys 1/2 switch between a synthetic voice and the microphone; M mutes.",
       "path": "Samples~/Beak"
+    },
+    {
+      "displayName": "Crowd",
+      "description": "Twenty primitive talkers sharing one synthetic voice, baked once at start (Baked Viseme Signal, no FFT at runtime), with level of detail by distance and speech bubbles (Speaking Indicator) tinted by detail. W/S move the camera, B switches baked and live analysis, L toggles level of detail.",
+      "path": "Samples~/Crowd"
     }
   ]
 }

@@ -7,8 +7,8 @@ Voice-driven mouths for any character in Unity 6: human jaws and blend shapes, m
 heads that split open on a hinge as the character talks. Driven by AudioSources, the microphone, voice chat SDKs,
 typed dialogue or baked clips.
 
-> **Work in progress.** Stages 1–4 of 6 are done: the analyzer, the voice sources, all main mouth drivers and four
-> samples. Baking, LOD, the setup tool and the full documentation follow.
+> **Work in progress.** Stages 1–5 of 6 are done: the analyzer, voice sources, mouth drivers, baking, level of detail
+> and five samples. The setup tool, the joint driver, integrations and the full documentation follow.
 
 **Install:** *Window > Package Manager > + > Add package from git URL…*
 
@@ -25,6 +25,7 @@ Import a sample (*Package Manager > Wobblefolk Talk Mouth > Samples*) and press 
 | **Humanoid** | Sphere head with a capsule jaw (Jaw Bone driver) and a mouth that stretches per shape (Transform driver), both on one voice. 1 / 2 / 3: synthetic voice, microphone, typed dialogue. M mutes. |
 | **Split Head** | The top half of the head swings open on a hinge (Hinge Split driver, Bouncy Split Head profile); a hat follows a moment later, the lower half drops a little. 1 / 2: synthetic voice, microphone. B: bounce, J: rattle, M: mute. |
 | **Monster** | Lower and upper jaw, two mandibles that spread sideways and a tongue that slides out only when loud: one Multi Bone driver, Monster profile. 1 / 2: synthetic voice, microphone. M: mute. |
+| **Crowd** | Twenty talkers sharing one voice, baked once at start, with level of detail and speech bubbles tinted by detail. W / S: move, B: baked or live, L: level of detail. |
 | **Beak** | Beak halves, crest feathers that follow one after another and wings that flap on loud syllables: one Multi Bone driver, Bird profile. 1 / 2: synthetic voice, microphone. M: mute. |
 
 The samples ship no audio: their voice is synthesised at start. Or set up your own character:
@@ -41,6 +42,7 @@ The samples ship no audio: their voice is synthesised at start. Or set up your o
 | **Audio Source Signal** | Dialogue clips. Reads the clip at the play position, so distance, volume and mute do not change the mouth. Needs *Decompress On Load*; streamed clips fall back to the AudioSource output. *Look Ahead* lets the mouth lead the sound slightly. |
 | **Microphone Signal** | The local player. Analysed only, never played back (no echo). Asks for permission on mobile. Not on WebGL. |
 | **External Level Signal** | Any voice chat SDK, without depending on one. Call `PushSamples` or `PushLevel` from any thread; *Delay* holds the mouth back to meet the played audio. |
+| **Baked Viseme Signal** | Baked clips (below): follows the AudioSource's play position, no FFT at runtime, works with streamed and compressed clips. Picks the bake that belongs to the playing clip. |
 | **Text Driven Signal** | Written dialogue without voice audio: `Say("Hello!")`. Letters set the shape, m/b/p close the lips, punctuation pauses. Optional babble voice and per-character events for typewriter text. |
 
 Your own source: implement `IVoiceSignalSource` and call `TalkVoice.SetSource`.
@@ -73,6 +75,24 @@ should own the jaw completely (a scream), disable the driver for that moment.
 
 **Split heads need separate meshes** for each moving piece (top and bottom half), and the hinge must not be inside
 one of them. The Split Head sample uses two half-sphere meshes, each with a lid for the inside of the mouth.
+
+## Baking
+
+Select audio clips, then *Assets > Wobblefolk > Bake Talk Mouth*: each gets a `.talkmouth.asset` next to it with its
+level and spectrum at 60 fps. Play it with **Baked Viseme Signal**. The character's profile still applies at runtime
+(gate, envelope, shapes, spring), so one bake fits every character; re-baking updates the asset in place. Clips made in
+code can be baked at runtime with `VoiceBaker.Bake(clip)`.
+
+## Level of detail
+
+On **Talk Voice**, *Use Lod*: up to *Full Detail Distance* the voice gives level and shapes, beyond it level only (no
+FFT), beyond *Cull Distance* (or when *Visibility Renderer* is off screen) it is not read at all and the mouth closes.
+`LodOverride` lets your own LOD or network relevance decide.
+
+## Speaking indicator
+
+**Speaking Indicator** shows an object (a bubble, an icon, a UI badge) while the voice speaks, pulses it with the
+opening and keeps it a moment after the last word.
 
 ## The analyzer (stage 1)
 

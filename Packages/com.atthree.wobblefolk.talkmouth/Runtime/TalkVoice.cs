@@ -12,6 +12,17 @@ namespace Wobblefolk.TalkMouth
         [InspectorName("2048 (finest)")] Size2048 = 2048,
     }
 
+    /// <summary>How much work a voice does, by distance and visibility.</summary>
+    public enum TalkLod
+    {
+        /// <summary>Level and mouth shapes.</summary>
+        Full = 0,
+        /// <summary>Level only: no FFT. The mouth opens and closes but keeps one shape.</summary>
+        Amplitude = 1,
+        /// <summary>Not read or analysed: the mouth closes and stays shut. Events still report the end of speech.</summary>
+        Culled = 2,
+    }
+
     /// <summary>
     /// One character's voice: reads a voice source every frame, analyses it and publishes the result. Any number of
     /// mouths can read the same voice. Analysis runs in Update, so mouth drivers can apply it in LateUpdate on top of
@@ -30,6 +41,18 @@ namespace Wobblefolk.TalkMouth
         [Tooltip("Keep talking while the game is paused (Time.timeScale = 0), as audio does.")]
         [SerializeField] bool useUnscaledTime = true;
 
+        [Header("Level of Detail")]
+        [Tooltip("Do less work far from the camera: shapes up close, level only further away, nothing beyond.")]
+        [SerializeField] bool useLod;
+        [Tooltip("Distances are measured from this. Empty = the main camera.")]
+        [SerializeField] Transform lodViewer;
+        [Tooltip("Up to this distance (m): level and mouth shapes.")]
+        [Min(0f)] [SerializeField] float fullDetailDistance = 15f;
+        [Tooltip("Beyond this distance (m): not analysed, the mouth closes.")]
+        [Min(0f)] [SerializeField] float cullDistance = 50f;
+        [Tooltip("Optional: when this renderer is off screen, the voice is not analysed either.")]
+        [SerializeField] Renderer visibilityRenderer;
+
         [Header("Events")]
         [SerializeField] UnityEvent onSpeechStarted = new UnityEvent();
         [SerializeField] UnityEvent onSpeechEnded = new UnityEvent();
@@ -46,8 +69,34 @@ namespace Wobblefolk.TalkMouth
         IVoiceSignalSource codeSource;
         TalkMouthProfile fallbackProfile;
         bool voiceEnabled = true;
+        TalkLod automaticLod = TalkLod.Full;
 
         public MouthState State { get; private set; } = MouthState.Silent;
+
+        /// <summary>Detail used last frame (always Full without LOD, unless overridden).</summary>
+        public TalkLod Lod { get; private set; } = TalkLod.Full;
+
+        /// <summary>Forces a detail level (e.g. a game's own LOD or networking relevance); null goes back to automatic.</summary>
+        public TalkLod? LodOverride { get; set; }
+
+        public bool UseLod
+        {
+            get => useLod;
+            set => useLod = value;
+        }
+
+        public void SetLodDistances(float fullDetail, float cull)
+        {
+            fullDetailDistance = Mathf.Max(0f, fullDetail);
+            cullDistance = Mathf.Max(fullDetailDistance, cull);
+        }
+
+        /// <summary>The detail for a distance and visibility.</summary>
+        public static TalkLod ComputeLod(float distance, bool visible, float fullDetailDistance, float cullDistance)
+        {
+            if (!visible || distance > cullDistance) return TalkLod.Culled;
+            return distance > fullDetailDistance ? TalkLod.Amplitude : TalkLod.Full;
+        }
         public bool IsSpeaking => State.isSpeaking;
         /// <summary>False after <see cref="SetEnabled"/>(false): the voice is ignored and the mouth stays shut.</summary>
         public bool IsVoiceEnabled => voiceEnabled;
@@ -122,18 +171,39 @@ namespace Wobblefolk.TalkMouth
             if (fallbackProfile != null) DestroyImmediate(fallbackProfile);
         }
 
-        void Update() => Tick(useUnscaledTime ? Time.unscaledDeltaTime : Time.deltaTime);
+        void Update()
+        {
+            automaticLod = AutomaticLod();
+            Tick(useUnscaledTime ? Time.unscaledDeltaTime : Time.deltaTime);
+        }
+
+        TalkLod AutomaticLod()
+        {
+            if (!useLod) return TalkLod.Full;
+            Transform viewer = lodViewer;
+            if (viewer == null)
+            {
+                Camera main = Camera.main;
+                viewer = main != null ? main.transform : null;
+            }
+
+            float distance = viewer != null ? Vector3.Distance(viewer.position, transform.position) : 0f;
+            bool visible = visibilityRenderer == null || visibilityRenderer.isVisible;
+            return ComputeLod(distance, visible, fullDetailDistance, cullDistance);
+        }
 
         /// <summary>Reads, analyses and publishes one frame. Public so tests and custom loops can drive it.</summary>
         public void Tick(float dt)
         {
             EnsureAnalyzer();
             signal.Clear();
+            TalkLod lod = LodOverride ?? automaticLod;
+            Lod = lod;
             IVoiceSignalSource current = Source;
-            if (voiceEnabled && current != null) current.Read(signal);
+            if (voiceEnabled && current != null && lod != TalkLod.Culled) current.Read(signal);
 
             bool wasSpeaking = State.isSpeaking;
-            State = analyzer.Process(signal, Profile, dt);
+            State = analyzer.Process(signal, Profile, dt, lod == TalkLod.Full);
 
             if (State.isSpeaking && !wasSpeaking)
             {

@@ -13,6 +13,8 @@ namespace Wobblefolk.TalkMouth
         Level = 2,
         /// <summary>A clean 0–1 level (e.g. typed text): 0 = closed, 1 = fully open by the profile's levels.</summary>
         Normalized = 3,
+        /// <summary>A linear RMS level plus band energies computed ahead of time (a baked clip): no FFT needed.</summary>
+        Bands = 4,
     }
 
     /// <summary>
@@ -39,6 +41,8 @@ namespace Wobblefolk.TalkMouth
         /// <summary>The source already knows the mouth shape (e.g. from the letter being typed).</summary>
         public bool HasViseme { get; private set; }
         public Viseme Viseme { get; private set; }
+        /// <summary>Band energies for <see cref="VoiceSignalKind.Bands"/>.</summary>
+        public BandEnergies Bands { get; private set; }
 
         public ReadOnlySpan<float> Samples => new ReadOnlySpan<float>(samples, 0, SampleCount);
 
@@ -50,6 +54,7 @@ namespace Wobblefolk.TalkMouth
             Level = 0f;
             HasViseme = false;
             Viseme = Viseme.Closed;
+            Bands = default;
         }
 
         /// <summary>Starts a sample frame and returns the buffer to fill (mono). <paramref name="count"/> is clamped to the capacity.</summary>
@@ -86,6 +91,15 @@ namespace Wobblefolk.TalkMouth
         {
             SetNormalized(level);
             SetViseme(viseme);
+        }
+
+        /// <summary>A level with the spectrum already split into bands (e.g. from a baked clip).</summary>
+        public void SetBands(float rms, in BandEnergies bands)
+        {
+            Clear();
+            Kind = VoiceSignalKind.Bands;
+            Level = Mathf.Max(0f, rms);
+            Bands = bands;
         }
 
         void SetViseme(Viseme viseme)
