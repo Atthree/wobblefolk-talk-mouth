@@ -535,3 +535,8 @@ gösterge, konuşmacı takibi ve kurulum aracı. *Window > General > Test Runner
 MIT, bkz. [LICENSE](LICENSE). Tüm kod bu paket için yazıldı; üçüncü taraf kod veya asset içermez. Sadece fikir için
 incelenen açık projeler [THIRD_PARTY_NOTICES.md](Packages/com.atthree.wobblefolk.talkmouth/THIRD_PARTY_NOTICES.md)
 dosyasında listelenir.
+
+---
+
+🤖 *This project was developed with the help of AI tools.*  
+🤖 *Bu proje yapay zekâ araçlarının yardımıyla geliştirilmiştir.*
